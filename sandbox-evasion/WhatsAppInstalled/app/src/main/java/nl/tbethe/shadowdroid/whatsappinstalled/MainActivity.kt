@@ -27,7 +27,9 @@ class MainActivity : AppCompatActivity() {
                     0
             )
             waInstalled = true
-        } catch (e: PackageManager.NameNotFoundException) {  }
+        } catch (e: PackageManager.NameNotFoundException) {
+            Log.d(TAG, "Won't be leaking data")
+        }
 
         if (waInstalled) {
             Log.d(TAG, "Leaking data...")
