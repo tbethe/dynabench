@@ -13,12 +13,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Higher API levels require `queries` statements in
-        // the Android Manifest to view other apps.
-        if (Build.VERSION.SDK_INT <= 29) leak()
-    }
 
-    private fun leak() {
         var waInstalled = false
         val pm = applicationContext.packageManager
         try {
