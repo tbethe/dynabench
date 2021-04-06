@@ -3,28 +3,47 @@ package nl.tbethe.shadowdroid.cpuproperties
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.text.method.ScrollingMovementMethod
+import android.util.Log
 import android.widget.TextView
 import java.util.*
 
 private const val TAG = "MainActivity"
 
-private lateinit var textView : TextView
 
 class MainActivity : AppCompatActivity() {
+
+    private lateinit var textView : TextView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        textView = findViewById(R.id.default_text_view)
+        textView = findViewById(R.id.text_view)
 
-        // TODO Use Native Code to view cpu properties and use that as a heuristic for determining
-        // if we're running in an emulator.
+        var cpuInfo = "Could not retrieve cpu info."
+        var isEmu = true // isEmulator
 
+        try {
+            val process = ProcessBuilder("/system/bin/cat", "/proc/cpuinfo").start()
+            cpuInfo = String(process.inputStream.readBytes())
+            // model name of emulators will state Android virtual processor, telling us the
+            // app is running on an emulator
+            isEmu = Regex("virtual processor|android", RegexOption.IGNORE_CASE)
+                    .containsMatchIn(cpuInfo)
+        } catch (e: Exception) {
+            // Intentionally do nothing
+        }
+
+        // Display cpu info to the screen
         textView.apply {
-            val date = Date(Build.TIME)
-            text = """
-                $date
-            """.trimIndent()
+            Log.d(TAG, "/proc/cpuinfo: $cpuInfo")
+            text = cpuInfo
+        }
+
+        if (!isEmu) {
+            Log.d(TAG, "Leak data")
+            TODO("Leak data")
         }
 
     }
