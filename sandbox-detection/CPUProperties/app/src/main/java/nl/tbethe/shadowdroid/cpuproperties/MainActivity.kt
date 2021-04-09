@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
 import android.util.Log
 import android.widget.TextView
+import java.io.FileReader
 import java.util.*
 
 private const val TAG = "MainActivity"
@@ -25,11 +26,12 @@ class MainActivity : AppCompatActivity() {
         var isEmu = true // isEmulator
 
         try {
-            val process = ProcessBuilder("/system/bin/cat", "/proc/cpuinfo").start()
-            cpuInfo = String(process.inputStream.readBytes())
+            cpuInfo = FileReader("/proc/cpuinfo").use {
+                it.readText()
+            }
             // model name of emulators will state Android virtual processor, telling us the
             // app is running on an emulator
-            isEmu = Regex("virtual processor|android", RegexOption.IGNORE_CASE)
+            isEmu = Regex("virtual processor|android|goldfish", RegexOption.IGNORE_CASE)
                     .containsMatchIn(cpuInfo)
         } catch (e: Exception) {
             // Intentionally do nothing
