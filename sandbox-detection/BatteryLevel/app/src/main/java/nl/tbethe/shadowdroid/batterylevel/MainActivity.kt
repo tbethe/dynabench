@@ -21,6 +21,18 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        prefs = getPreferences(Context.MODE_PRIVATE)
+
+
+        val above = prefs.getBoolean(ABOVE_80, false)
+        val below = prefs.getBoolean(BELOW_20, false)
+
+        if (above && below) leak()
+    }
+
+    override fun onResume() {
+        super.onResume()
+
         val batteryLevel = queryBatteryLevel()
         batteryLevel?.let { lvl ->
             when {
@@ -35,16 +47,9 @@ class MainActivity : AppCompatActivity() {
                 else -> return@let
             }
         }
-
-        prefs = getPreferences(Context.MODE_PRIVATE)
-
-        val above = prefs.getBoolean(ABOVE_80, false)
-        val below = prefs.getBoolean(BELOW_20, false)
-
-        if (above && below) leak()
     }
 
-    fun leak() {
+    private fun leak() {
         Log.d(TAG, "Leaking data")
         TODO("Leak data")
     }
