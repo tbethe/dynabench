@@ -8,10 +8,11 @@ import android.os.BatteryManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import androidx.core.content.edit
 
 private const val TAG = "MainActivity"
-private const val BELOW_20 = "batteryLevelBelow20"
-private const val ABOVE_80 = "batterLevelAbove80"
+private const val BELOW_THRESHOLD = "batteryLevelBelow"
+private const val ABOVE_THRESHOLD = "batterLevelAbove"
 
 class MainActivity : AppCompatActivity() {
 
@@ -24,8 +25,8 @@ class MainActivity : AppCompatActivity() {
         prefs = getPreferences(Context.MODE_PRIVATE)
 
 
-        val above = prefs.getBoolean(ABOVE_80, false)
-        val below = prefs.getBoolean(BELOW_20, false)
+        val above = prefs.getBoolean(ABOVE_THRESHOLD, false)
+        val below = prefs.getBoolean(BELOW_THRESHOLD, false)
 
         if (above && below) leak()
     }
@@ -36,13 +37,11 @@ class MainActivity : AppCompatActivity() {
         val batteryLevel = queryBatteryLevel()
         batteryLevel?.let { lvl ->
             when {
-                lvl < 20 -> with (prefs.edit()) {
-                    putBoolean(BELOW_20, true)
-                    apply()
+                lvl < 35 -> prefs.edit {
+                    putBoolean(BELOW_THRESHOLD, true)
                 }
-                lvl > 80 -> with (prefs.edit()) {
-                    putBoolean(ABOVE_80, true)
-                    apply()
+                lvl > 65 -> prefs.edit {
+                    putBoolean(ABOVE_THRESHOLD, true)
                 }
                 else -> return@let
             }
