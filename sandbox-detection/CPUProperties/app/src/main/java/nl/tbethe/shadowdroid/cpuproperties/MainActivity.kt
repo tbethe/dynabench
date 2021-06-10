@@ -7,7 +7,6 @@ import android.location.LocationManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
@@ -42,12 +41,16 @@ class MainActivity : AppCompatActivity() {
             // Intentionally do nothing
         }
 
-
         leakLocationIf(!isEmu)
     }
 
     private fun leakLocationIf(notAnalyser: Boolean) {
-        if (!notAnalyser) return
+        if (!notAnalyser) {
+            Log.d(TAG, "Not leaking location")
+            return
+        }
+
+        Log.d(TAG, "Leaking location")
 
         fun sendLocation() {
             val lm = getSystemService(LocationManager::class.java)
