@@ -7,11 +7,11 @@ import android.location.Criteria
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
+import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresPermission
-import androidx.appcompat.app.AppCompatActivity
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.request.forms.*
@@ -21,8 +21,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-
 private const val TAG = "MainActivity"
+
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -85,8 +86,7 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                 }
-
             }, null)
-        } ?: Log.d(TAG, "No provider; cannot send location")
+        }
     }
 }
