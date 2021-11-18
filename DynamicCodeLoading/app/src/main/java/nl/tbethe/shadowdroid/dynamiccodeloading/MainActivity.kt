@@ -7,14 +7,12 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
-import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import dalvik.system.DexClassLoader
 import kotlinx.coroutines.*
 import java.io.File
 import java.net.URL
 import java.nio.channels.Channels
-import java.util.concurrent.Executors
 import kotlin.reflect.full.companionObject
 import kotlin.reflect.full.companionObjectInstance
 

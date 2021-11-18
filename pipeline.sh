@@ -21,14 +21,14 @@
 for dir in *; do
     if [ -f "$dir/gradlew" ]; then
         APP_DIRS+=("$dir")
-    fi 
+    fi
 done
 
 echo "Outputting apk's in ./apks"
 if [ ! -d "apks" ]; then
     mkdir apks
-elif [ -z $(ls -A apks) ]; then
-    rm -r "apks/*"
+elif [ ! -z "$(ls -A apks)"  ]; then
+    rm -r apks/*
 fi
 
 
@@ -45,10 +45,20 @@ do
     RC=$?
     cd ..
 
-    if [ $RC = 0 ]; then 
+    if [ $RC = 0 ]; then
         echo Done
         cp "${DIR}/app/build/outputs/apk/debug/app-debug.apk" "apks/${DIR}.apk"
     else
         echo Failed
     fi
 done
+
+########################################################
+# Invoke Python script to submit samples to analysers. #
+########################################################
+
+echo "Invoking python script ..."
+date=$(date +%F__%H-%M)
+mkdir "results/$date"
+apks=./apks/*.apk
+python3 -u submit_samples.py "results/$date" $apks
