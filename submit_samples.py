@@ -48,10 +48,10 @@ def virus_total(apks, dir):
     for i, apk in enumerate(apks):
         with open(f'{dir}/virustotal.json', 'a') as f:
 
-            print(f'Analysing {apk} ...')
+            print(f'Submitting {apk}')
             if i % 4 == 3:
 
-                elapsed_time_since_start_of_batch = (start_time_last_batch - datetime.now()).total_seconds()
+                elapsed_time_since_start_of_batch = abs((start_time_last_batch - datetime.now()).total_seconds())
                 if elapsed_time_since_start_of_batch < 240:
                     sleep_time = 250 - elapsed_time_since_start_of_batch
                     print(f'Sleeping for {sleep_time} seconds, to avoid going over VirusTotal limit ...', end='', flush=True)
@@ -68,8 +68,7 @@ def virus_total(apks, dir):
                     files = { 'file': (file.name, file.read()) },
                 )
 
-            print('Done', flush=True)
-            print('Fetching result ...', end='')
+            print('Waiting for result to be ready', end='', flush=True)
             
             response_json = submit_respons.json()
             id = response_json['data']['id']
@@ -80,7 +79,7 @@ def virus_total(apks, dir):
                 headers = key_header
             )    
             while r.json()['data']['attributes']['status'] == 'queued':
-                time.sleep(15)
+                time.sleep(60)
                 r = requests.get(
                     f'https://www.virustotal.com/api/v3/analyses/{id}',
                     headers = key_header
