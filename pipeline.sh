@@ -31,7 +31,6 @@ elif [ ! -z "$(ls -A apks)"  ]; then
     rm -r apks/*
 fi
 
-
 # For each app, build it using Gradle and move the apk to /apks
 NR_APPS_DECR=$(( ${#APP_DIRS[@]} - 1 ))
 for i in $(
@@ -39,9 +38,11 @@ for i in $(
     )
 do
     DIR="${APP_DIRS[i]}"
-    echo -ne "\r ${i}/${NR_APPS_DECR} \t Building $DIR ... \t"
+    echo -ne "\r $(( ${i} + 1))/$(( ${NR_APPS_DECR} + 1)) \t Building $DIR ... \t"
     cd "$DIR"
-    "./gradlew" --quiet tasks build > /dev/null
+    # To obtain a new apk (different hash), we increment the version in the gradle script
+    sed -i 's/\(.*versionCode \)\([0-9]\+\)/echo "\1$((\2 + 1))"/e' app/build.gradle
+    "./gradlew" tasks build > /dev/null
     RC=$?
     cd ..
 

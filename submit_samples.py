@@ -52,8 +52,8 @@ def virus_total(apks, dir):
             if i % 4 == 3:
 
                 elapsed_time_since_start_of_batch = abs((start_time_last_batch - datetime.now()).total_seconds())
-                if elapsed_time_since_start_of_batch < 240:
-                    sleep_time = 250 - elapsed_time_since_start_of_batch
+                if elapsed_time_since_start_of_batch < 60:
+                    sleep_time = 65 - elapsed_time_since_start_of_batch
                     print(f'Sleeping for {sleep_time} seconds, to avoid going over VirusTotal limit ...', end='', flush=True)
                     time.sleep(sleep_time)
                     print(' continuing')
@@ -68,26 +68,28 @@ def virus_total(apks, dir):
                     files = { 'file': (file.name, file.read()) },
                 )
 
-            print('Waiting for result to be ready', end='', flush=True)
+            print('Waiting for result to be ready.', end='', flush=True)
             
             response_json = submit_respons.json()
             id = response_json['data']['id']
             # Fetch result, check if it's completed, if not try again
-            
-            r = requests.get(
-                f'https://www.virustotal.com/api/v3/analyses/{id}',
-                headers = key_header
-            )    
-            while r.json()['data']['attributes']['status'] == 'queued':
-                time.sleep(60)
-                r = requests.get(
+            try:
+                analyses_response = requests.get(
                     f'https://www.virustotal.com/api/v3/analyses/{id}',
                     headers = key_header
-                )
-                print('.', end='')
-                
+                )    
+                while not analyses_response.status_code == 200 or analyses_response.json()['data']['attributes']['status'] == 'queued':
+                    time.sleep(60)
+                    analyses_response = requests.get(
+                        f'https://www.virustotal.com/api/v3/analyses/{id}',
+                        headers = key_header
+                    )
+                    print('.', end='')
+            except Exception as error:
+                print(error)
+                continue        
             print(' Done!\n', flush=True)
-            f.write(json.dumps(r.json(), indent=4))
+            f.write(json.dumps(analyses_response.json(), indent=4))
             f.write('\n')
 
             
