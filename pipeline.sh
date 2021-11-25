@@ -69,5 +69,4 @@ echo "Invoking python script ..."
 date=$(date +%F__%H-%M)
 mkdir "results/$date"
 apks=./"$APKS_DIR"/*.apk
-echo $apks
-# python3 -u submit_samples.py "results/$date" $apks
+python3 -u submit_samples.py "results/$date" $apks
