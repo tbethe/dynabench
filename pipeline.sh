@@ -18,9 +18,9 @@ SOURCE_DIR='benchmark_src'
 # relative path the compiled android apks should be placed upon compilation
 APKS_DIR='benchmark_apks'
 
-################################
-# Build apps using gradle      #
-################################
+###########################
+# Build apps using gradle #
+###########################
 
 # Filter directories with gradle wrapper
 for dir in "$SOURCE_DIR"/*; do
@@ -61,9 +61,9 @@ do
     fi
 done
 
-########################################################
-# Invoke Python script to submit samples to analysers. #
-########################################################
+#######################################################
+# Invoke Python script to submit samples to analysers #
+#######################################################
 
 echo "Invoking python script ..."
 date=$(date +%F__%H-%M)
