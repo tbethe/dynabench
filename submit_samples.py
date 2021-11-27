@@ -11,7 +11,7 @@ from datetime import datetime
 # Submit to provider
 
 class APK_Submitter:
-    
+
     def __init__(self, apk_path_list, result_directory):
         self.analysers = {}
         self.apk_path_list = apk_path_list
@@ -44,9 +44,12 @@ def virus_total(apks, dir):
     # Public API only allows 4 requests per minute. So we submit in batches.
     start_time_last_batch = datetime.now()
 
+    # Open the JSON list.
+    with open(f'{dir}/virustotal.json', 'a') as results_file:
+        results_file.write('[\n')
 
     for i, apk in enumerate(apks):
-        with open(f'{dir}/virustotal.json', 'a') as f:
+        with open(f'{dir}/virustotal.json', 'a') as results_file:
 
             print(f'Submitting {apk}')
             if i % 4 == 3:
@@ -59,7 +62,7 @@ def virus_total(apks, dir):
                     print(' continuing')
                 start_time_last_batch = datetime.now()
 
-            # submit to VirusTotal 
+            # submit to VirusTotal
 
             with open(apk, 'rb') as file:
                 submit_respons = requests.post(
@@ -69,7 +72,7 @@ def virus_total(apks, dir):
                 )
 
             print('Waiting for result to be ready.', end='', flush=True)
-            
+
             response_json = submit_respons.json()
             id = response_json['data']['id']
             # Fetch result, check if it's completed, if not try again
@@ -77,22 +80,27 @@ def virus_total(apks, dir):
                 analyses_response = requests.get(
                     f'https://www.virustotal.com/api/v3/analyses/{id}',
                     headers = key_header
-                )    
+                )
                 while not analyses_response.status_code == 200 or analyses_response.json()['data']['attributes']['status'] == 'queued':
                     time.sleep(60)
                     analyses_response = requests.get(
                         f'https://www.virustotal.com/api/v3/analyses/{id}',
                         headers = key_header
                     )
-                    print('.', end='')
+                    print('.', end='', flush=True)
             except Exception as error:
                 print(error)
-                continue        
+                continue
             print(' Done!\n', flush=True)
-            f.write(json.dumps(analyses_response.json(), indent=4))
-            f.write('\n')
+            results_file.write(json.dumps(analyses_response.json(), indent=4))
+            if i != len(apks) - 1:
+                # Not the last result we are writing.
+                results_file.write(',\n')
+            else:
+                # This is the last result; close the JSON list.
+                results_file.write('\n]')
 
-            
+
 #############################
 # Main
 #############################
@@ -125,7 +133,7 @@ def main():
 
     # Register analysers
     submitter.register_analyser("VirusTotal", virus_total)
-    
+
     submitter.submit()
 
 if __name__ == "__main__":
