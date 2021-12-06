@@ -10,7 +10,7 @@ android {
         applicationId "nl.tbethe.shadowdroid.alwaysleak"
         minSdkVersion 23
         targetSdkVersion 30
-        versionCode 6
+        versionCode 7
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"

@@ -11,7 +11,7 @@ android {
         applicationId "nl.tbethe.shadowdroid.accelerometer"
         minSdkVersion 23
         targetSdkVersion 30
-        versionCode 8
+        versionCode 9
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"

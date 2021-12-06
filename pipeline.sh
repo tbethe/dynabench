@@ -47,8 +47,8 @@ do
     echo -ne "\r $(( ${i} + 1))/$(( ${NR_APPS_DECR} + 1)) \t Building $DIR ... \t"
     cd "$DIR"
     # To obtain a new apk (different hash), we increment the version in the gradle script
-    # sed -i 's/\(.*versionCode \)\([0-9]\+\)/echo "\1$((\2 + 1))"/e' app/build.gradle
-    # "./gradlew" tasks build > /dev/null
+    sed -i 's/\(.*versionCode \)\([0-9]\+\)/echo "\1$((\2 + 1))"/e' app/build.gradle
+    "./gradlew" tasks build > /dev/null
     RC=$?
     RC=0
     cd $SCRIPT_DIR
