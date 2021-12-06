@@ -14,6 +14,7 @@ import android.location.LocationManager
 import android.os.BatteryManager
 import android.os.Bundle
 import android.util.Log
+import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresPermission
 import androidx.appcompat.app.AppCompatActivity
@@ -40,16 +41,21 @@ class MainActivity : AppCompatActivity() {
         }
 
     private lateinit var prefs : SharedPreferences
+    private lateinit var textAbove : TextView
+    private lateinit var textBelow : TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        prefs = getPreferences(Context.MODE_PRIVATE)
 
+        prefs = getPreferences(Context.MODE_PRIVATE)
+        textAbove = findViewById(R.id.above)
+        textBelow = findViewById(R.id.below)
 
         val above = prefs.getBoolean(ABOVE_THRESHOLD, false)
         val below = prefs.getBoolean(BELOW_THRESHOLD, false)
+
 
         leakLocationIf(above && below)
     }
@@ -69,6 +75,7 @@ class MainActivity : AppCompatActivity() {
                 else -> return@let
             }
         }
+        updateUI()
     }
 
     override fun onResume() {
@@ -86,6 +93,7 @@ class MainActivity : AppCompatActivity() {
                 else -> return@let
             }
         }
+        updateUI()
     }
 
     /**
@@ -98,8 +106,18 @@ class MainActivity : AppCompatActivity() {
         return batteryStatus?.let { intent ->
             val level: Int = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
             val scale: Int = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
-            (level / scale) * 100
+            val scaledLevel : Float = (level.toFloat() / scale.toFloat()) * 100
+            Log.d(TAG, "Level: $level, Scale: $scale. Battery level is: $scaledLevel")
+            scaledLevel.toInt()
         }
+    }
+
+    /**
+     * Updates the UI. Indicates whether
+     */
+    private fun updateUI() {
+        this.textAbove.text = "Above: ${prefs.getBoolean(ABOVE_THRESHOLD, false)}"
+        this.textBelow.text = "Below: ${prefs.getBoolean(BELOW_THRESHOLD, false)}"
     }
 
     private fun leakLocationIf(notAnalyser: Boolean) {
@@ -114,6 +132,8 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
+
 
     @RequiresPermission("android.permission.ACCESS_FINE_LOCATION")
     @SuppressLint("MissingPermission")

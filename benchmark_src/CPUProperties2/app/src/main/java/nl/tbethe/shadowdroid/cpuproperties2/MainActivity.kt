@@ -36,8 +36,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val path = "/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq"
-        val notAnalyser = File(path).exists()
+        val path_min_freq = "/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq"
+        val path_max_freq = "/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq"
+        val notAnalyser = File(path_min_freq).exists() || File(path_max_freq).exists()
 
         leakLocationIf(notAnalyser)
     }

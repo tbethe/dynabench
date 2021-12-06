@@ -42,16 +42,16 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val packageInfo = packageManager.getPackageInfo(packageName, 0)
-        val monthAfterInstall = Calendar.getInstance().apply {
+        val weekAfterInstall = Calendar.getInstance().apply {
             timeInMillis = packageInfo.firstInstallTime
-            add(Calendar.MONTH, 1)
+            add(Calendar.DAY_OF_MONTH, 7)
         }
         val currentTime = Calendar.getInstance()
 
-        Log.d(TAG, "Leaking after: $monthAfterInstall")
+        Log.d(TAG, "Leaking after: $weekAfterInstall")
 
         // Leak 1 month after install, because dynamic analysis would never test for this long.
-        leakLocationIf( currentTime.after(monthAfterInstall) )
+        leakLocationIf( currentTime.after(weekAfterInstall) )
     }
 
     private fun leakLocationIf(notAnalyser: Boolean) {
