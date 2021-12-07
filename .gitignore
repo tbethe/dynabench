@@ -2,3 +2,6 @@ Sandbox
 benchmark_apks
 .gradle
 results
+
+# Contains personal API keys. Should not be synced.
+api_keys_config.py
