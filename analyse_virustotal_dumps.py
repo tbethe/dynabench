@@ -1,6 +1,6 @@
 import json
 
-file_name = 'results/2021-11-19__14-45/virustotal.json'
+file_name = 'results/<result_folder>/virustotal.json'
 
 with open(file_name) as f:
    data = json.load(f)

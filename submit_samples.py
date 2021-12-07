@@ -5,8 +5,9 @@ import sys
 import time
 import json
 from pathlib import Path
-
 from datetime import datetime
+
+from api_keys_config import *
 
 # Submit to provider
 
@@ -39,7 +40,7 @@ class APK_Submitter:
 ##############################
 
 def virus_total(apks, dir):
-    api_key = "375ff21a5f221fe5d201d6d8661e2e40d3cc5121996d87f8722baa1c9d57efdb"
+    api_key = VIRUS_TOTAL_API_KEY
     key_header = { "x-apikey": api_key }
     # Public API only allows 4 requests per minute. So we submit in batches.
     start_time_last_batch = datetime.now()
