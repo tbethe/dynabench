@@ -1,3 +1,3 @@
-# ShadowDroid - Evading and testing Android dynamic analysis.
+# DynaBench - Testing and Evading Dynamic Analysis in Android Apps
 
 Timme Bethe
